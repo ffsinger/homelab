@@ -17,15 +17,15 @@ Installation instructions, config files and scripts for a homelab server running
 | [Gluetun](https://github.com/qdm12/gluetun) | VPN client for qBittorrent | Yes |
 | [Homepage](https://gethomepage.dev/) | Dashboard with system information and links to other services | Yes |
 | [Nextcloud](https://nextcloud.com/) | Cloud storage | Yes |
-| [Syncthing](https://syncthing.net/) | 2-way sync between mobile phone and laptop with homelab as middleman | Yes |
+| [Syncthing](https://syncthing.net/) | 2-way sync between personal devices | Yes |
 | [Mokuro](https://github.com/kha-white/mokuro) | Manga OCR | Yes |
 | [rclone](https://rclone.org/) | WebDAV server for syncing manga with mokuro-reader | Yes |
 | [Gotify](https://gotify.net/) | Notification server | Yes |
 | [Diun](https://crazymax.dev/diun/) | Notifications about new docker tags | Yes |
 | [n8n](https://n8n.io/) | Easy automation, used for notifying about new manga volumes | Yes |
 | [Wireguard](https://www.wireguard.com/) | VPN for accessing services from outside the home network | No |
-| [Wireguard-initramfs](https://github.com/r-pufky/wireguard-initramfs/) | Wireguard during boot to allow SSH access while the root filesystem is encrypted | No |
-| [Samba](https://www.samba.org/) | Easy access to the media library at the filesystem level | No |
+| [Wireguard-initramfs](https://github.com/r-pufky/wireguard-initramfs/) | Wireguard during boot for decrypting the root filesystem from outside the home network | No |
+| [Samba](https://www.samba.org/) | Filesystem access to the media library | No |
 | [Borg](https://www.borgbackup.org/) | Docker volumes backup with daily cron | No |
 
 
