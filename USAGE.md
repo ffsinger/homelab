@@ -20,24 +20,15 @@ Example `/etc/hosts` for the client :
 
 ## Scripts
 
-- [homelab.sh](./scripts/homelab.sh) (main entry point with tampering prevention)
-    - `homelab <script-name> [args...]`
-- [pull.sh](./scripts/pull.sh) (pull changes)
-    - `homelab pull`
-- [services.sh](./scripts/services.sh) (manage docker services)
-    - `homelab services <start|stop|update> [stack-name] [container-name]`
-- [dotfiles-update.sh](./scripts/dotfiles-update.sh) (manage dotfiles)
-    - `homelab dotfiles-update [files...]`
-- [mokuro-run-nohup.sh](./scripts/mokuro-run-nohup.sh) (run mokuro without stopping when closing the SSH session)
-    - `homelab mokuro-run-nohup` 
-    - `tail -f ~/mokuro.log`
-- [backup-services.sh](./scripts/backup-services.sh) (backup docker volumes with Borg)
-    - `homelab backup-services`
-- [backup-media.sh](./scripts/backup-media.sh) (backup media to the offline HDD, handling mounting and unmounting of the backup drive)
-    - `homelab backup-media`
-- [borg.sh](./scripts/borg.sh) (wrapper for Borg with environment variables)
-    - `homelab borg <args>`
-- [storage-mount.sh](./scripts/storage-mount.sh) (mount external HDD)
-    - `homelab storage-mount`
-- [storage-umount.sh](./scripts/storage-umount.sh) (unmount external HDD)
-    - `homelab storage-umount`
+| Script | Description | Usage |
+|--------|-------------|-------|
+| [homelab.sh](./scripts/homelab.sh) | Main entry point with tampering prevention | `homelab <script-name> [args...]` |
+| [pull.sh](./scripts/pull.sh) | Pull changes | `homelab pull` |
+| [services.sh](./scripts/services.sh) | Manage docker services | `homelab services <start\|stop\|update> [stack-name] [container-name]` |
+| [dotfiles-update.sh](./scripts/dotfiles-update.sh) | Manage dotfiles | `homelab dotfiles-update [files...]` |
+| [mokuro-run-nohup.sh](./scripts/mokuro-run-nohup.sh) | Run mokuro without stopping when closing the SSH session | `homelab mokuro-run-nohup && tail -f ~/mokuro.log` |
+| [backup-services.sh](./scripts/backup-services.sh) | Backup docker volumes with Borg | `homelab backup-services` |
+| [backup-media.sh](./scripts/backup-media.sh) | Backup media to the offline HDD, handling mounting and unmounting of the backup drive | `homelab backup-media` |
+| [borg.sh](./scripts/borg.sh) | Wrapper for Borg with environment variables | `homelab borg <args>` |
+| [storage-mount.sh](./scripts/storage-mount.sh) | Mount external HDD | `homelab storage-mount` |
+| [storage-umount.sh](./scripts/storage-umount.sh) | Unmount external HDD | `homelab storage-umount` |
