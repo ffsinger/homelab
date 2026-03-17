@@ -1,0 +1,29 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/info-widgets/
+
+- logo:
+    icon: /images/homelab.png
+
+- resources:
+    expanded: true
+    cpu: true
+    memory: true
+
+- resources:
+    expanded: true
+    disk:
+        - /
+        - /data
+
+# - search:
+#     provider: duckduckgo
+#     target: _blank
+
+# - datetime:
+#     text_size: xl
+#     locale: fr-CH
+#     format:
+#         timeStyle: short
+#         dateStyle: short
+#         hour12: false

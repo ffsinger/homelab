@@ -1,0 +1,51 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:${JELLYFIN_VERSION:-latest}
+    container_name: jellyfin
+    pull_policy: always # Important for staying up to date
+    restart: 'unless-stopped'
+    # Optional - specify the uid and gid you would like Jellyfin to use instead of root
+    # user: uid:gid
+    ports:
+      # Port 8096 now handled by Traefik, but keep for local access
+      - 8096:8096/tcp
+      - 7359:7359/udp
+    volumes:
+      - /opt/jellyfin/config:/config
+      - /opt/jellyfin/cache:/cache
+      - type: bind
+        source: /data/downloads/media
+        target: /media
+        read_only: false
+      # - type: bind
+      #   source: /path/to/media2
+      #   target: /media2
+      # Optional - extra fonts to be used during transcoding with subtitle burn-in
+      # - type: bind
+      #   source: /path/to/fonts
+      #   target: /usr/local/share/fonts/custom
+      #   read_only: true
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/jellyfin/jellyfin/releases"
+      - "diun.metadata.current_version=${JELLYFIN_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN}`)"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.middlewares=private-access@file"
+      - "traefik.http.routers.jellyfin.tls=true"
+      - "traefik.http.routers.jellyfin.tls.certresolver=letsencrypt" 
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+    networks:
+      - traefik
+    # Optional - alternative address used for autodiscovery
+    # environment:
+    #   - JELLYFIN_PublishedServerUrl=http://example.com
+    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+    # extra_hosts:
+    #   - 'host.docker.internal:host-gateway'
+
+networks:
+  traefik:
+    external: true

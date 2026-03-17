@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Requires `sudo git config --global --add safe.directory ~/homelab`
+
+LOG_FILE="/var/log/backup-services.log"
+{
+    echo "=== Backup started at $(date) ==="
+    /usr/local/bin/homelab backup-services
+    echo "=== Backup finished at $(date) with exit code $? ==="
+} >> "$LOG_FILE" 2>&1

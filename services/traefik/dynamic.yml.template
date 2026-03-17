@@ -1,0 +1,100 @@
+http:
+  middlewares:
+    # IP allowlist middleware - restricts access to local networks and VPN
+    # Allowed ranges: 192.168.0.0/24 (local LAN), 100.64.0.0/10 (Tailscale), 10.0.0.0/24 (WireGuard)
+    # To make a service public :
+    # - remove the private-access middleware from the router definition
+    # - add a rule "Host(`foobar.${DOMAIN}`)" to the router definition
+    # - make sure that port 443 and 80 are open on the router and forwarded to Traefik host
+    # - make sure that *.${DOMAIN} DNS records is pointing to the router public IP
+    # WARNING : can be dangerous if running behind a proxy that passes X-Forwarded-For header, like Cloudflare orange cloud
+    private-access:
+      ipAllowList:
+        sourceRange:
+          - "192.168.0.0/24"
+          - "100.64.0.0/10" # Requires --snat-subnet-routes=false on the server or we won't see the original IP
+          - "10.0.0.0/24"
+          - "127.0.0.1/32"
+          - "172.16.0.0/12" # Docker internal network range (needed for nextcloud)
+
+    # Nextcloud-specific middlewares
+    nextcloud-secure-headers:
+      headers:
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        referrerPolicy: "same-origin"
+
+    # CORS headers for WebDAV
+    mokuro-webdav-cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - PUT
+          - DELETE
+          - OPTIONS
+          - PROPFIND
+          - MKCOL
+        accessControlAllowHeaders:
+          - Authorization
+          - Content-Type
+          - Depth
+          - Overwrite
+          - Destination
+        accessControlAllowCredentials: true
+        accessControlAllowOriginList:
+          - https://reader.mokuro.app
+
+    https-redirect:
+      redirectScheme:
+        scheme: https
+
+    nextcloud-chain:
+      chain:
+        middlewares:
+          - https-redirect
+          - nextcloud-secure-headers
+
+  routers:
+    # Nextcloud AIO Management Interface
+    nextcloud-aio:
+      rule: "Host(`nextcloud-aio.${DOMAIN}`)"
+      service: nextcloud-aio
+      entryPoints:
+        - websecure
+      middlewares:
+        - private-access
+      tls:
+        certResolver: letsencrypt
+
+    # Nextcloud - adjust the Host rule to your desired domain
+    nextcloud:
+      rule: "Host(`nextcloud.${DOMAIN}`)"
+      service: nextcloud
+      entryPoints:
+        - websecure
+      middlewares:
+        - nextcloud-chain
+        - private-access
+      tls:
+        certResolver: letsencrypt
+
+  services:
+
+    # Nextcloud AIO Management Interface (uses self-signed cert)
+    nextcloud-aio:
+      loadBalancer:
+        servers:
+          - url: "https://nextcloud-aio-mastercontainer:8080"
+        serversTransport: insecureTransport
+
+    # Nextcloud - using Docker bridge network DNS resolution
+    # nextcloud-aio-apache is the container name created by Nextcloud AIO
+    nextcloud:
+      loadBalancer:
+        servers:
+          - url: "http://nextcloud-aio-apache:11000"
+
+  # Allow connecting to Syncthing's self-signed cert
+  serversTransports:
+    insecureTransport:
+      insecureSkipVerify: true

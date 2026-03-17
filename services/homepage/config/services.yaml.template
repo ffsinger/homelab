@@ -1,0 +1,81 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+# This file is generated from a template with env var substition
+
+- Media:
+
+    - Jellyfin:
+        href: https://jellyfin.${DOMAIN}
+        icon: jellyfin.png
+        server: my-docker
+        container: jellyfin
+
+    - Bazarr:
+        href: https://bazarr.${DOMAIN}
+        icon: bazarr.png
+        server: my-docker
+        container: bazarr
+
+    - Sonarr:
+        href: https://sonarr.${DOMAIN}
+        icon: sonarr.png
+        server: my-docker
+        container: sonarr
+
+    - Radarr:
+        href: https://radarr.${DOMAIN}
+        icon: radarr.png
+        server: my-docker
+        container: radarr
+
+    - Prowlarr:
+        href: https://prowlarr.${DOMAIN}
+        icon: prowlarr.png
+        server: my-docker
+        container: prowlarr
+
+    - qBittorrent:
+        href: https://qbittorrent.${DOMAIN}
+        icon: qbittorrent.png
+        server: my-docker
+        container: qbittorrent
+
+- Tools:
+
+    - Syncthing:
+        href: https://syncthing.${DOMAIN}
+        icon: syncthing.png
+        server: my-docker
+        container: syncthing
+
+    - Nextcloud:
+        href: https://nextcloud.${DOMAIN}
+        icon: nextcloud.png
+        server: my-docker
+        container: nextcloud-aio-mastercontainer
+
+    - n8n:
+        href: https://n8n.${DOMAIN}
+        icon: n8n.png
+        server: my-docker
+        container: n8n
+
+    - Gotify:
+        href: https://gotify.${DOMAIN}
+        icon: gotify.png
+        server: my-docker
+        container: gotify
+
+    - Traefik:
+        href: https://traefik.${DOMAIN}
+        icon: traefik.png
+        server: my-docker
+        container: traefik
+
+    - Technitium DNS:
+        href: https://technitium.${DOMAIN}
+        icon: technitium.png
+        server: my-docker
+        container: technitium

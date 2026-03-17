@@ -1,0 +1,60 @@
+# Inspired from https://gethomepage.dev/installation/docker/
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:${DOCKER_SOCKET_PROXY_VERSION:-latest}
+    container_name: docker-socket-proxy-homepage
+    pull_policy: always
+    restart: unless-stopped
+    privileged: true
+    environment:
+      # Grant access only to the API endpoints homepage needs
+      - CONTAINERS=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/Tecnativa/docker-socket-proxy/releases"
+      - "diun.metadata.current_version=${DOCKER_SOCKET_PROXY_VERSION}"
+    networks:
+      socket-proxy:
+        aliases:
+          - docker-socket-proxy
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:${HOMEPAGE_VERSION:-latest}
+    container_name: homepage
+    pull_policy: always
+    restart: 'unless-stopped'
+    ports:
+      - 3000:3000
+    volumes:
+      - /opt/homepage/config:/app/config
+      - /opt/homepage/images:/app/public/images
+      - /data:/data:ro # For disk monitoring
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: ${DOMAIN}
+      PUID: 1000
+      GUID: 1000
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/gethomepage/homepage/releases"
+      - "diun.metadata.current_version=${HOMEPAGE_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.homepage.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.middlewares=private-access@file"
+      - "traefik.http.routers.homepage.tls=true"
+      - "traefik.http.routers.homepage.tls.certresolver=letsencrypt" 
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+      - socket-proxy
+
+networks:
+  traefik:
+    external: true
+  socket-proxy:
+    name: socket-proxy-homepage
+    driver: bridge
+    internal: true

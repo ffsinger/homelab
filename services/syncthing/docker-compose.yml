@@ -1,0 +1,38 @@
+---
+services:
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:${SYNCTHING_VERSION:-latest}
+    container_name: syncthing
+    pull_policy: always
+    restart: 'unless-stopped'
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/syncthing/config:/config
+      - /data/syncthing:/data/syncthing
+      # Additional folders can be added here
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/syncthing/syncthing/releases"
+      - "diun.metadata.current_version=${SYNCTHING_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.syncthing.rule=Host(`syncthing.${DOMAIN}`)"
+      - "traefik.http.routers.syncthing.entrypoints=websecure"
+      - "traefik.http.routers.syncthing.middlewares=private-access@file"
+      - "traefik.http.routers.syncthing.tls=true"
+      - "traefik.http.routers.syncthing.tls.certresolver=letsencrypt"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

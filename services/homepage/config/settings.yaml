@@ -1,0 +1,41 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
+title: Homelab
+
+background:
+  image: https://images.unsplash.com/photo-1528485238486-507af7c0aa19?auto=format&fit=crop&w=2560&q=80
+  blur: xs
+  saturate: 50
+  brightness: 50
+  opacity: 60
+
+theme: dark
+color: slate
+
+headerStyle: boxedWidgets
+
+favicon: /images/homelab-icons/favicon-32x32.png
+
+layout:
+  Media:
+    style: row
+    columns: 2
+  Tools:
+    style: row
+    columns: 2
+
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: false
+  hideVisitURL: false
+
+hideVersion: true
+disableUpdateCheck: true
+
+pwa:
+  icons:
+    - src: /images/homelab-icons/android-icon-192x192.png
+      type: image/png
+      sizes: 192x192

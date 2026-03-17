@@ -1,0 +1,2 @@
+nvme0n1p3_crypt UUID=${ROOT_LUKS_UUID} none luks,discard,x-initrd.attach
+data UUID=${DATA_LUKS_UUID}   /etc/luks-keys/data_drive.key   luks

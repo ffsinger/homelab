@@ -1,0 +1,12 @@
+# ~/.inputrc
+
+# Automatically show all possiblities after Tab completion
+set show-all-if-ambiguous on
+# Case insensitive Tab completion
+set completion-ignore-case on
+
+# Macros
+# Alt+U to append 'sudo' to the beginning of the line
+"\eu": "\C-asudo \C-e"
+# Alt+O to append a redirect from stdout/stderr to /dev/null
+"\eo": "\C-e > /dev/null 2>&1 &"

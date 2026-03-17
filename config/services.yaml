@@ -1,0 +1,172 @@
+# Service configuration for homelab scripts
+# This file centralizes all service-specific metadata
+
+# Startup order for services (stop order will be reversed)
+start_order:
+  - traefik
+  - syncthing
+  - technitium
+  - jellyfin
+  - torrent
+  - nextcloud
+  - manga
+  - gotify
+  - n8n
+  - diun
+  - homepage
+
+# Service-specific configuration
+services:
+  traefik:
+    files:
+      - src: services/traefik/docker-compose.yml
+        dst: /opt/traefik/docker-compose.yml
+        mode: copy
+      - src: services/traefik/dynamic.yml.template
+        dst: /opt/traefik/dynamic.yml
+        mode: envsubst
+
+  syncthing:
+    files:
+      - src: services/syncthing/docker-compose.yml
+        dst: /opt/syncthing/docker-compose.yml
+        mode: copy
+
+  technitium:
+    files:
+      - src: services/technitium/docker-compose.yml
+        dst: /opt/technitium/docker-compose.yml
+        mode: copy
+
+  jellyfin:
+    files:
+      - src: services/jellyfin/docker-compose.yml
+        dst: /opt/jellyfin/docker-compose.yml
+        mode: copy
+
+  torrent:
+    files:
+      - src: services/torrent/docker-compose.yml
+        dst: /opt/torrent/docker-compose.yml
+        mode: copy
+
+  nextcloud:
+    files:
+      - src: services/nextcloud/docker-compose.yml
+        dst: /opt/nextcloud/docker-compose.yml
+        mode: copy
+    hooks:
+      on_start: "docker exec --env START_CONTAINERS=1 nextcloud-aio-mastercontainer /daily-backup.sh"
+      on_stop: "docker exec --env STOP_CONTAINERS=1 nextcloud-aio-mastercontainer /daily-backup.sh"
+
+  manga:
+    files:
+      - src: services/manga/docker-compose.yml
+        dst: /opt/manga/docker-compose.yml
+        mode: copy
+      - src: services/manga/Dockerfile
+        dst: /opt/manga/Dockerfile
+        mode: copy
+
+  gotify:
+    files:
+      - src: services/gotify/docker-compose.yml
+        dst: /opt/gotify/docker-compose.yml
+        mode: copy
+
+  n8n:
+    files:
+      - src: services/n8n/docker-compose.yml
+        dst: /opt/n8n/docker-compose.yml
+        mode: copy
+      - src: services/n8n/Dockerfile
+        dst: /opt/n8n/Dockerfile
+        mode: copy
+      - src: services/n8n/n8n-task-runners.json
+        dst: /opt/n8n/n8n-task-runners.json
+        mode: copy
+
+  diun:
+    files:
+      - src: services/diun/docker-compose.yml
+        dst: /opt/diun/docker-compose.yml
+        mode: copy
+
+  homepage:
+    files:
+      - src: services/homepage/docker-compose.yml
+        dst: /opt/homepage/docker-compose.yml
+        mode: copy
+      - src: services/homepage/config/bookmarks.yaml
+        dst: /opt/homepage/config/bookmarks.yaml
+        mode: copy
+      - src: services/homepage/config/services.yaml.template
+        dst: /opt/homepage/config/services.yaml
+        mode: envsubst
+      - src: services/homepage/config/settings.yaml
+        dst: /opt/homepage/config/settings.yaml
+        mode: copy
+      - src: services/homepage/config/widgets.yaml
+        dst: /opt/homepage/config/widgets.yaml
+        mode: copy
+      - src: services/homepage/config/docker.yaml
+        dst: /opt/homepage/config/docker.yaml
+        mode: copy
+      - src: public/images
+        dst: /opt/homepage/images
+        mode: sync
+        delete: true
+
+# Backup configuration for borg backup script
+# Some services have internal backups, which is good for backing up the DB in a clean state
+# Even then we need to include them, otherwise it would stay on the same disk
+backups:
+  # Prowlarr : internal backup every day
+  # Sonarr : internal backup every day
+  # Radarr : internal backup every day
+  # Bazarr : internal backup every 7 days, not configurable
+  # qBittorrent : no internal backup
+  - service: torrent
+    paths:
+      - /opt/torrent/prowlarr/Backups
+      - /opt/torrent/sonarr/Backups
+      - /opt/torrent/radarr/Backups
+      - /opt/torrent/bazarr/backup
+      - /opt/torrent/qbittorrent
+    exclude:
+      - opt/qbittorrent/qBittorrent/logs
+      - opt/qbittorrent/qBittorrent/GeoDB
+
+  # Technitium : no internal backup
+  - service: technitium
+    paths:
+      - /opt/technitium/config
+
+  # Jellyfin : internal backup is only manual
+  - service: jellyfin
+    paths:
+      - /opt/jellyfin/config
+    exclude:
+      - opt/jellyfin/config/log
+      - opt/jellyfin/config/metadata
+
+  # n8n : no internal backup
+  - service: n8n
+    paths:
+      - /opt/n8n/data
+      - /opt/n8n/local-files
+    exclude:
+      - opt/n8n/data/n8nEventLog-1.log
+      - opt/n8n/data/n8nEventLog-2.log
+      - opt/n8n/data/n8nEventLog.log
+
+  # Gotify : no internal backup
+  - service: gotify
+    paths:
+      - /opt/gotify/data/gotify.db
+
+  # Nextcloud : the internal backup currently is stored on the same disk as the data and the borg backup, we need another strategy
+  # Homepage : no backup needed
+  # Traefik : no backup needed
+  # Manga : no backup needed
+  # Diun : no backup needed

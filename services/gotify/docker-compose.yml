@@ -1,0 +1,35 @@
+services:
+  gotify:
+    image: gotify/server:${GOTIFY_VERSION:-latest}
+    container_name: gotify
+    hostname: gotify.internal
+    pull_policy: always
+    restart: 'unless-stopped'
+    ports:
+      - 8888:80
+    volumes:
+      - /opt/gotify/data:/app/data
+    environment:
+      - TZ=${TIMEZONE}
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/gotify/server/releases"
+      - "diun.metadata.current_version=${GOTIFY_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.gotify.rule=Host(`gotify.${DOMAIN}`)"
+      - "traefik.http.routers.gotify.entrypoints=websecure"
+      - "traefik.http.routers.gotify.middlewares=private-access@file"
+      - "traefik.http.routers.gotify.tls=true"
+      - "traefik.http.routers.gotify.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gotify.loadbalancer.server.port=80"
+    networks:
+      - traefik
+      - gotify-notifications
+
+networks:
+  traefik:
+    external: true
+  gotify-notifications:
+    name: gotify-notifications
+    driver: bridge

@@ -1,0 +1,106 @@
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:${DOCKER_SOCKET_PROXY_VERSION:-latest}
+    container_name: docker-socket-proxy-traefik
+    pull_policy: always
+    restart: unless-stopped
+    privileged: true
+    environment:
+      # Grant access only to the API endpoints Traefik needs
+      - CONTAINERS=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/Tecnativa/docker-socket-proxy/releases"
+      - "diun.metadata.current_version=${DOCKER_SOCKET_PROXY_VERSION}"
+    networks:
+      - socket-proxy
+
+  traefik:
+    image: traefik:${TRAEFIK_VERSION:-latest}
+    container_name: traefik
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      - docker-socket-proxy
+    env_file:
+      - .env
+    command:
+      # Enable the Dashboard
+      - "--api.dashboard=true"
+      
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.endpoint=tcp://docker-socket-proxy:2375"
+      
+      # Dynamic config
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
+      
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      
+      # Websecure entrypoint configuration for Nextcloud
+      - "--entrypoints.websecure.transport.respondingtimeouts.readtimeout=24h"
+      - "--entrypoints.websecure.http.encodedcharacters.allowencodedslash=true"
+      - "--entrypoints.websecure.http.encodedcharacters.allowencodedquestionmark=true"
+      - "--entrypoints.websecure.http.encodedcharacters.allowencodedpercent=true"
+      
+      # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      
+      # Let's Encrypt (ACME) with DNS challenge
+      # Setting a public resolver is needed, otherwise it will use the internal DNS and fail
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${DNS_PROVIDER}"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[0]=9.9.9.9:53"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[1]=1.1.1.1:53"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      
+      # Logging (optional, useful for debugging)
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    dns:
+      - 9.9.9.9
+      - 1.1.1.1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # ACME storage for Let's Encrypt certificates
+      - /opt/traefik/letsencrypt:/letsencrypt
+      
+      # Dynamic configuration for non-Docker services
+      - /opt/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/traefik/traefik/releases"
+      - "diun.metadata.current_version=${TRAEFIK_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.tls.domains[0].main=*.${DOMAIN}"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth,private-access@file"
+    networks:
+      - traefik
+      - socket-proxy
+
+networks:
+  traefik:
+    name: traefik
+    driver: bridge
+  socket-proxy:
+    name: socket-proxy-traefik
+    driver: bridge
+    internal: true

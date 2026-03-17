@@ -1,0 +1,191 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:${GLUETUN_VERSION:-latest}
+    container_name: gluetun
+    hostname: gluetun.internal
+    restart: unless-stopped
+    pull_policy: always
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+      - TZ=${TIMEZONE}
+      # https://github.com/qdm12/gluetun-wiki/blob/main/setup/advanced/vpn-port-forwarding.md
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8999/api/v2/app/setPreferences 2>&1'
+      - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8999/api/v2/app/setPreferences 2>&1'
+    ports:
+      - 8999:8999  # qBittorrent Web UI
+      - 6881:6881  # Torrenting port TCP
+      - 6881:6881/udp  # Torrenting port UDP
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/qdm12/gluetun/releases"
+      - "diun.metadata.current_version=${GLUETUN_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN}`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=websecure"
+      - "traefik.http.routers.qbittorrent.middlewares=private-access@file"
+      - "traefik.http.routers.qbittorrent.tls=true"
+      - "traefik.http.routers.qbittorrent.tls.certresolver=letsencrypt"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8999"
+    networks:
+      - traefik
+      - starrs
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:${QBITTORRENT_VERSION:-latest}
+    container_name: qbittorrent
+    restart: unless-stopped
+    pull_policy: always
+    network_mode: "service:gluetun"  # Routes through VPN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      - WEBUI_PORT=8999
+      # - TORRENTING_PORT: updated by gluetun based on port forwarding status
+    volumes:
+      - /opt/torrent/qbittorrent:/config
+      - /data/downloads/torrents:/data/downloads/torrents
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://www.qbittorrent.org/news"
+      - "diun.metadata.current_version=${QBITTORRENT_VERSION}"
+      - "diun.exclude_tags=^14"
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:${PROWLARR_VERSION:-latest}
+    container_name: prowlarr
+    hostname: prowlarr.internal
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+    ports:
+      - 9696:9696
+    volumes:
+      - /opt/torrent/prowlarr:/config
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/Prowlarr/Prowlarr/releases"
+      - "diun.metadata.current_version=${PROWLARR_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN}`)"
+      - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.middlewares=private-access@file"
+      - "traefik.http.routers.prowlarr.tls=true"
+      - "traefik.http.routers.prowlarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+    networks:
+      - traefik
+      - starrs
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:${SONARR_VERSION:-latest}
+    container_name: sonarr
+    hostname: sonarr.internal
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=022 # 755 for folders, 644 for files
+      - TZ=${TIMEZONE}
+    ports:
+      - 8989:8989
+    volumes:
+      - /opt/torrent/sonarr:/config
+      - /data/downloads:/data/downloads  # Should include qbittorrent download path
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/Sonarr/Sonarr/releases"
+      - "diun.metadata.current_version=${SONARR_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.middlewares=private-access@file"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    networks:
+      - traefik
+      - starrs
+  radarr:
+    image: lscr.io/linuxserver/radarr:${RADARR_VERSION:-latest}
+    container_name: radarr
+    hostname: radarr.internal
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=022 # 755 for folders, 644 for files
+      - TZ=${TIMEZONE}
+    ports:
+      - 7878:7878
+    volumes:
+      - /opt/torrent/radarr:/config
+      - /data/downloads:/data/downloads  # Should include qbittorrent download path
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/Radarr/Radarr/releases"
+      - "diun.metadata.current_version=${RADARR_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.middlewares=private-access@file"
+      - "traefik.http.routers.radarr.tls=true"
+      - "traefik.http.routers.radarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+    networks:
+      - traefik
+      - starrs
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:${BAZARR_VERSION:-latest}
+    container_name: bazarr
+    hostname: bazarr.internal
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+    ports:
+      - 6767:6767
+    volumes:
+      - /opt/torrent/bazarr:/config
+      - /data/downloads:/data/downloads  # Should include qbittorrent download path
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/morpheus65535/bazarr/releases"
+      - "diun.metadata.current_version=${BAZARR_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.${DOMAIN}`)"
+      - "traefik.http.routers.bazarr.entrypoints=websecure"
+      - "traefik.http.routers.bazarr.middlewares=private-access@file"
+      - "traefik.http.routers.bazarr.tls=true"
+      - "traefik.http.routers.bazarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
+    networks:
+      - traefik
+      - starrs
+
+networks:
+  traefik:
+    external: true
+  starrs:
+    name: starrs
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16  # Stable IP range because qbittorrent authentication bypassing cannot use hostnames

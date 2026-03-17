@@ -1,0 +1,59 @@
+services:
+  # https://rclone.org/install/#docker
+  mokuro-webdav:
+    image: rclone/rclone:${MOKURO_WEBDAV_VERSION:-latest}
+    container_name: mokuro-webdav
+    pull_policy: always
+    restart: 'unless-stopped'
+    user: 1000:1000
+    command:
+      - serve
+      - webdav
+      - /data/downloads/media/books  # mokuro-reader uses a folder named "mokuro-reader" inside this path
+      - --addr
+      - :5577
+      - --htpasswd
+      - /config/rclone/htpasswd
+    ports:
+      - 5577:5577/tcp
+    volumes:
+      - /opt/manga/config/mokuro-webdav:/config/rclone  # rclone.conf can be put here
+      - type: bind
+        source: /data/downloads/media/books
+        target: /data/downloads/media/books
+        read_only: false
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/rclone/rclone/releases"
+      - "diun.metadata.current_version=${MOKURO_WEBDAV_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.mokuro-webdav.rule=Host(`mokuro-webdav.${DOMAIN}`)"
+      - "traefik.http.routers.mokuro-webdav.entrypoints=websecure"
+      - "traefik.http.routers.mokuro-webdav.middlewares=private-access@file,mokuro-webdav-cors@file"
+      - "traefik.http.routers.mokuro-webdav.tls=true"
+      - "traefik.http.routers.mokuro-webdav.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mokuro-webdav.loadbalancer.server.port=5577"
+    networks:
+      - traefik
+
+  mokuro:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MOKURO_VERSION=${MOKURO_VERSION:-latest}
+    container_name: mokuro
+    restart: 'unless-stopped'
+    user: 1000:1000
+    volumes:
+      - type: bind
+        source: /data/downloads/media/books/Manga
+        target: /data/downloads/media/books/Manga
+        read_only: false
+    labels:
+      - "diun.enable=false"
+
+networks:
+  traefik:
+    external: true

@@ -1,0 +1,11 @@
+- This repository contains configuration files and scripts for setting up a home lab server.
+- Development of these files is not done on the server. Do not assume that bash commands can be run in the current environment.
+- An overview is available in `README.md`.
+- Detailed installation instructions are available in `INSTALL.md`, make sure to keep this file up to date when making changes to the setup process.
+- Info about running scripts is available in `USAGE.md`, make sure to keep this file up to date when making changes to the scripts or adding new ones.
+- The `scripts/` directory contains various scripts for managing the server, including a main entry point `homelab.sh` that provides a unified interface for running other scripts.
+- The `config/` directory contains configuration files for the scripts, in order to keep them generic.
+- The `services/` directory contains configuration files for docker services. These files are installed in `/opt/` on the server.
+- The `dotfiles/` directory contains configuration files for the server itself. It mirrors the file hierarchy of the server, e.g. `dotfiles/home/` and `dotfiles/etc/` correspond to `/home/` and `/etc/` on the server.
+- The `archive/` directory contains old versions of configuration files for reference.
+- The `public/` directory contains images used by containers.

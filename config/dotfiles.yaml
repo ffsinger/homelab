@@ -1,0 +1,119 @@
+# Dotfiles and system configuration management
+# This file centralizes configuration file definitions and reload commands
+
+# Reload groups in processing order
+reload_groups:
+  - bash
+  - user_configs
+  - nftables
+  - samba
+  - system_boot
+  - sshd
+  - docker
+  - cron
+
+# Configuration file definitions
+# Each config has:
+#   - group: which reload group it belongs to
+#   - src: relative path in the repository (from repo root)
+#   - dst: absolute path on the system (can use variables like $USER)
+configs:
+  # Bash shell configuration
+  bashrc:
+    group: bash
+    src: dotfiles/home/user/.bashrc
+    dst: /home/$USER/.bashrc
+
+  profile:
+    group: bash
+    src: dotfiles/home/user/.profile
+    dst: /home/$USER/.profile
+
+  inputrc:
+    group: bash
+    src: dotfiles/home/user/.inputrc
+    dst: /home/$USER/.inputrc
+
+  # User SSH configuration
+  ssh_user:
+    group: user_configs
+    src: dotfiles/home/user/.ssh/config
+    dst: /home/$USER/.ssh/config
+
+  # Network firewall rules
+  nftables:
+    group: nftables
+    src: dotfiles/etc/nftables.conf
+    dst: /etc/nftables.conf
+
+  # Samba file sharing
+  samba:
+    group: samba
+    src: dotfiles/etc/samba/smb.conf
+    dst: /etc/samba/smb.conf
+
+  # System boot configuration
+  fstab:
+    group: system_boot
+    src: dotfiles/etc/fstab.template
+    dst: /etc/fstab
+    mode: envsubst
+
+  crypttab:
+    group: system_boot
+    src: dotfiles/etc/crypttab.template
+    dst: /etc/crypttab
+    mode: envsubst
+
+  initramfs_conf:
+    group: system_boot
+    src: dotfiles/etc/initramfs-tools/initramfs.conf.template
+    dst: /etc/initramfs-tools/initramfs.conf
+    mode: envsubst
+
+  # SSH daemon configuration
+  sshd:
+    group: sshd
+    src: dotfiles/etc/ssh/sshd_config
+    dst: /etc/ssh/sshd_config
+
+  # Dropbear SSH for initramfs
+  dropbear_conf:
+    group: initramfs
+    src: dotfiles/etc/dropbear/initramfs/dropbear.conf
+    dst: /etc/dropbear/initramfs/dropbear.conf
+
+  # Docker daemon configuration
+  docker:
+    group: docker
+    src: dotfiles/etc/docker/daemon.json
+    dst: /etc/docker/daemon.json
+
+  # Daily backup cron job
+  backup_services_cron:
+    group: cron
+    src: dotfiles/etc/cron.daily/backup-services
+    dst: /etc/cron.daily/backup-services
+
+# Reload commands for each group
+# Only needed if the group requires a reload action after updating
+reload_commands:
+  bash:
+    command: source ~/.bashrc && bind -f ~/.inputrc
+
+  nftables:
+    command: sudo systemctl restart nftables
+    note: Docker services may change nftables rules, they need to be restarted after updating the nftables configuration.
+
+  samba:
+    command: sudo systemctl restart smbd
+
+  system_boot:
+    command: sudo update-initramfs -u && sudo systemctl daemon-reload
+    note: "This will regenerate the initramfs and reload systemd. A reboot may be required for changes to take effect."
+
+  sshd:
+    command: sudo systemctl reload ssh
+
+  docker:
+    command: sudo systemctl restart docker.socket

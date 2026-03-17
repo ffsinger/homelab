@@ -1,0 +1,26 @@
+services:
+  mokuro-reader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mokuro-reader
+    restart: unless-stopped
+    ports:
+      - 3001:3000
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.mokuro-reader.rule=Host(`mokuro.${DOMAIN}`)"
+      - "traefik.http.routers.mokuro-reader.entrypoints=websecure"
+      - "traefik.http.routers.mokuro-reader.middlewares=private-access@file"
+      - "traefik.http.routers.mokuro-reader.tls=true"
+      - "traefik.http.routers.mokuro-reader.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mokuro-reader.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
