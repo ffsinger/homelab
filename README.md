@@ -24,6 +24,7 @@ Installation instructions, config files and scripts for a homelab server running
 | [Diun](https://crazymax.dev/diun/) | Notifications about new docker tags | Yes |
 | [n8n](https://n8n.io/) | Easy automation, used for notifying about new manga volumes | Yes |
 | [Wireguard](https://www.wireguard.com/) | VPN for accessing services from outside the home network | No |
+| [Wireguard-initramfs](https://github.com/r-pufky/wireguard-initramfs/) | Wireguard during boot to allow SSH access while the root filesystem is encrypted | No |
 | [Samba](https://www.samba.org/) | Easy access to the media library at the filesystem level | No |
 | [Borg](https://www.borgbackup.org/) | Docker volumes backup with daily cron | No |
 
