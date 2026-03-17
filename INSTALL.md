@@ -88,32 +88,32 @@ homelab dotfiles-update bashrc profile inputrc
 
 ## Storage
 
-Folder structure :
 ```
-data  # external HDD 5TB
-├── nextcloud  # nextcloud data
-├── syncthing  # syncthing data
+data                    # Data drive
+├── nextcloud
+├── syncthing
 ├── backups
-│   └── borg  # /opt/* incremental
-└── downloads  # external HDD 5TB
-    ├── torrents  # qbittorrent download location
-    └── media  # media library
+│   └── borg            # Docker volumes backups
+└── downloads
+    ├── torrents        # qbittorrent download location
+    └── media           # Media library
         ├── books
-        │   ├── Manga  # mangas as .jpg and .mokuro files
-        │   ├── mokuro-reader  # managed by mokuro-reader via WebDAV
+        │   └── Manga   # Mangas as .jpg and .mokuro files
         ├── movies
-        │   ├── Anime Movies  # jellyfin library
-        │   └── Movies  # jellyfin library
+        │   ├── Movies  # Jellyfin library
+        │   └── ...
         ├── music
         └── series
-            ├── Anime  # jellyfin library
-            └── Series  # jellyfin library
+            ├── Series  # Jellyfin library
+            └── ...
 mnt
-└── hdd  # external 1TB HDD, connected occasionally
-    └── media  # media library backup
+└── hdd                 # Offline backup drive
+    └── media           # Media library backup
 ```
 
-- LUKS-encrypted data drive
+- Both the data and backup drives are assumed to be already LUKS encrypted
+- Drives can be decrypted automatically thanks to the keyfile
+- Keyfile is unreadable at rest due to full system encryption
 
 ```bash
 sudo apt install cryptsetup
@@ -434,9 +434,9 @@ sudo chmod 600 /opt/torrent/.env
     - Enable "Use Hardlinks instead of Copy"
     - Enable "Import Extra Files"
     - Enable "Unmonitor Deleted Episodes"
-    - Add Root Folders
-        - `/data/downloads/media/series/Anime`
+    - Add Root Folders (Jellyfin libraries)
         - `/data/downloads/media/series/Series`
+        - ...
 - Settings -> UI
     - Change date formats
 - Settings -> General -> Backups
@@ -453,9 +453,9 @@ sudo chmod 600 /opt/torrent/.env
     - Enable "Use Hardlinks instead of Copy"
     - Enable "Import Extra Files"
     - Enable "Unmonitor Deleted Movies"
-    - Add Root Folders
-        - `/data/downloads/media/movies/Anime Movies`
+    - Add Root Folders (Jellyfin libraries)
         - `/data/downloads/media/movies/Movies`
+        - ...
 - Settings -> UI
     - Change date formats
 - Settings -> General -> Backups
@@ -471,13 +471,12 @@ sudo chmod 600 /opt/torrent/.env
     - Port : `8989` / `7878`
     - API Key : get it from Sonarr / Radarr Settings -> General -> Security
 - Settings -> Providers
-    - OpenSubtitles.com (Multi subs) (needs account)
-    - Jimaku.cc (JP subs) (needs API key from account)
+    - Add providers (e.g. OpenSubtitles.com, Jimaku.cc)
 - Settings -> Subtitles
     - Store alongside media file (for Jellyfin compatibility)
 - Settings -> Languages
-    - Languages filter : English, French, Japanese
-    - Create profiles : EN+JP, EN+FR, EN+FR+JP
+    - Languages filter : English, French, Japanese, ...
+    - Create profiles : EN+JP, EN+FR, EN+FR+JP, ...
 
 ## DNS server - Technitium
 
@@ -539,6 +538,10 @@ APP record config for SplitHorizon.SimpleAddress :
 - [Hardware selection](https://jellyfin.org/docs/general/administration/hardware-selection)
 - [Install directly on a NAS](https://nas.ugreen.com/blogs/how-to/install-jellyfin-setup-step-by-step)
 - Configuration
+    - Creates libraries
+        - `/data/downloads/media/movies/Movies` for movies
+        - `/data/downloads/media/series/Series` for series
+        - ...
     - Metadata
         - Use TMDB for movies
         - Use TVDB for series (need to install plugin. TMDB is the default and also works but doesn't have movie arcs and recaps as part of the series. Also sonarr uses TVDB)
