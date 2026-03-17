@@ -1,44 +1,37 @@
 # Homelab
 
-Installation instructions, config files and scripts for a homelab server setup.
+Installation instructions, config files and scripts for a homelab server running Debian.
 
-## Software
+## Services
 
-### OS
-
-Debian 13 (trixie)
-
-### Dockerized services
-
-- Traefik (reverse proxy serving `<service>.<domain>`)
-- Technitium (DNS server)
-- Jellyfin (media server)
-- Sonarr, Radarr, Bazarr, Prowlarr (media management)
-- qBittorrent, through a consumer VPN with Gluetun
-- Homepage (dashboard with links to other services and with system information)
-- Nextcloud (cloud storage)
-- Syncthing (2-way sync between mobile phone and laptop with homelab as middleman)
-- Mokuro (manga OCR), rclone serve WebDAV (for syncing manga with mokuro-reader)
-- Gotify (notification server)
-- Diun (notifications about new docker tags)
-- n8n (easy automation, used for notifying about new manga volumes)
-
-#### Bare metal services
-
-- Wireguard VPN (for accessing services from outside the home network)
-- nftables firewall
-- samba (for easy access to the media library at the filesystem level)
-- Borg backup (for docker volumes) with daily cron
+| Service | Usage | Dockerized |
+|---------|-------|------------|
+| [Traefik](https://traefik.io/) | Reverse proxy serving `<service>.<domain>` | Yes |
+| [Technitium](https://technitium.com/dns/) | DNS server | Yes |
+| [Jellyfin](https://jellyfin.org/) | Media server | Yes |
+| [Sonarr](https://sonarr.tv/) | Series management | Yes |
+| [Radarr](https://radarr.video/) | Movie management | Yes |
+| [Bazarr](https://www.bazarr.media/) | Subtitle management | Yes |
+| [Prowlarr](https://prowlarr.com/) | Indexer management | Yes |
+| [qBittorrent](https://www.qbittorrent.org/) | BitTorrent client | Yes |
+| [Gluetun](https://github.com/qdm12/gluetun) | VPN client for qBittorrent | Yes |
+| [Homepage](https://gethomepage.dev/) | Dashboard with system information and links to other services | Yes |
+| [Nextcloud](https://nextcloud.com/) | Cloud storage | Yes |
+| [Syncthing](https://syncthing.net/) | 2-way sync between mobile phone and laptop with homelab as middleman | Yes |
+| [Mokuro](https://github.com/kha-white/mokuro) | Manga OCR | Yes |
+| [rclone](https://rclone.org/) | WebDAV server for syncing manga with mokuro-reader | Yes |
+| [Gotify](https://gotify.net/) | Notification server | Yes |
+| [Diun](https://crazymax.dev/diun/) | Notifications about new docker tags | Yes |
+| [n8n](https://n8n.io/) | Easy automation, used for notifying about new manga volumes | Yes |
+| [Wireguard](https://www.wireguard.com/) | VPN for accessing services from outside the home network | No |
+| [Samba](https://www.samba.org/) | Easy access to the media library at the filesystem level | No |
+| [Borg](https://www.borgbackup.org/) | Docker volumes backup with daily cron | No |
 
 
 ## Hardware
 
-- Minix NEO NGC N512 (16GB RAM, 512GB SSD, 2.5Gb ethernet)
-- 5TB external HDD (USB) for storing : 
-    - media (series, movies, books, music)
-    - torrents
-    - syncthing data
-    - nextcloud data
-    - backups (docker volumes)
-- 1TB (to be upgraded) offline external HDD (USB) for storing :
-    - backup of media library
+| Device | Usage |
+|--------|-------|
+| Minix NEO NGC N512 (16GB RAM, 512GB SSD, 2.5Gb ethernet) | Main unit |
+| 5TB external HDD (USB) | Media library (series, movies, books, music), torrents, syncthing data, nextcloud data, docker volumes backups |
+| 1TB external HDD (USB, offline, to be upgraded) | Media library backup |
