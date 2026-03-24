@@ -54,7 +54,6 @@ services:
       - "diun.metadata.changelog=https://crazymax.dev/diun/changelog/"
       - "diun.metadata.current_version=${DIUN_VERSION}"
     networks:
-      - default
       - socket-proxy
       - gotify-notifications
 

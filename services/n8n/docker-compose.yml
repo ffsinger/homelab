@@ -82,4 +82,5 @@ networks:
   traefik:
     external: true
   n8n:
+    name: n8n
     driver: bridge

@@ -45,6 +45,7 @@ services:
         - MOKURO_VERSION=${MOKURO_VERSION:-latest}
     container_name: mokuro
     restart: 'unless-stopped'
+    network_mode: none
     user: 1000:1000
     volumes:
       - type: bind
