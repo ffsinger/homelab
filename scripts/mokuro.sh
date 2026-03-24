@@ -1,11 +1,19 @@
 #!/bin/bash
 # Check for volume directories without matching .mokuro files and process them individually
 
-# Check if running with sudo
+LOG="/var/log/mokuro.log"
+
+# If not root, re-launch with sudo nohup in the background and exit
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run with sudo"
-  exit 1
+  sudo -v
+  sudo -n nohup "$0" >> "$LOG" 2>&1 &
+  echo "Running in background. Follow progress with: tail -f $LOG"
+  exit 0
 fi
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+log "=== mokuro run started ==="
 
 MANGA_DIR="/data/downloads/media/books/Manga"
 
@@ -22,9 +30,11 @@ find "$MANGA_DIR" -mindepth 2 -maxdepth 2 -type d | sort | while read volume_dir
   mokuro_file="${volume_dir}.mokuro"
   
   if [ ! -f "$mokuro_file" ]; then
-    echo "Processing: $rel_path"
+    log "Processing: $rel_path"
     docker exec mokuro mokuro --disable_confirmation=true "$rel_path"
   else
-    echo "Skipping (already processed): $rel_path"
+    log "Skipping (already processed): $rel_path"
   fi
 done
+
+log "=== mokuro run finished ==="

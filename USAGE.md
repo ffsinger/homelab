@@ -26,7 +26,7 @@ Example `/etc/hosts` for the client :
 | [pull.sh](./scripts/pull.sh) | Pull changes | `homelab pull` |
 | [services.sh](./scripts/services.sh) | Manage docker services | `homelab services <start\|stop\|update> [stack-name] [container-name]` |
 | [dotfiles-update.sh](./scripts/dotfiles-update.sh) | Manage dotfiles | `homelab dotfiles-update [files...]` |
-| [mokuro-run-nohup.sh](./scripts/mokuro-run-nohup.sh) | Run mokuro without stopping when closing the SSH session | `homelab mokuro-run-nohup && tail -f ~/mokuro.log` |
+| [mokuro.sh](./scripts/mokuro-run.sh) | Run mokuro in background | `homelab mokuro && tail -f /var/log/mokuro.log` |
 | [backup-services.sh](./scripts/backup-services.sh) | Backup docker volumes with Borg | `homelab backup-services` |
 | [backup-media.sh](./scripts/backup-media.sh) | Backup media to the offline HDD, handling mounting and unmounting of the backup drive | `homelab backup-media` |
 | [borg.sh](./scripts/borg.sh) | Wrapper for Borg with environment variables | `homelab borg <args>` |
