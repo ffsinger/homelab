@@ -6,13 +6,10 @@ LOG="/var/log/mokuro.log"
 # If not root, re-launch with sudo nohup in the background and exit
 if [ "$EUID" -ne 0 ]; then
   sudo -v
-  sudo -n nohup "$0" &
+  sudo -n bash -c "nohup '$0' >> '$LOG' 2>&1 &"
   echo "Running in background. Follow progress with: tail -f $LOG"
   exit 0
 fi
-
-# Redirect all output to log as root (root can write to /var/log)
-exec >> "$LOG" 2>&1
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
