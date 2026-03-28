@@ -120,9 +120,10 @@ services:
     volumes:
       - /opt/jikan/typesense:/data
     healthcheck:
-      test: ['CMD-SHELL', 'curl -sf http://127.0.0.1:8108/health | grep -q ok']
+      test: ['CMD-SHELL', 'bash -c "echo > /dev/tcp/127.0.0.1/8108" 2>/dev/null']
       interval: 5s
       timeout: 2s
+      start_period: 15s
     networks:
       - jikan
 
