@@ -651,7 +651,6 @@ sudo chmod 600 /opt/n8n/.env
 ```bash
 sudo mkdir -p /opt/jikan
 sudo mkdir -p /opt/jikan/secrets
-sudo chown -R $USER:$USER /opt/jikan/secrets
 
 read -p "Enter DB username: " JIKAN_DB_USERNAME
 echo
@@ -676,6 +675,10 @@ echo "$JIKAN_REDIS_PASSWORD" | sudo tee /opt/jikan/secrets/redis_password.txt > 
 read -s -p "Enter Typesense API key: " JIKAN_TYPESENSE_API_KEY
 echo
 echo "$JIKAN_TYPESENSE_API_KEY" | sudo tee /opt/jikan/secrets/typesense_api_key.txt > /dev/null
+
+sudo useradd --no-create-home --shell /usr/sbin/nologin --uid 10001 jikan
+sudo chown -R jikan:root /opt/jikan/secrets
+sudo chmod 640 /opt/jikan/secrets/*.txt
 
 echo "JIKAN_VERSION=" | sudo tee /opt/jikan/.env > /dev/null
 echo "MONGO_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null

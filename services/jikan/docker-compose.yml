@@ -1,0 +1,148 @@
+# https://github.com/jikan-me/jikan-rest/blob/master/container_usage.md
+services:
+  jikan:
+    image: "docker.io/jikanme/jikan-rest:${JIKAN_VERSION:-latest}"
+    container_name: jikan
+    hostname: jikan.internal
+    pull_policy: always
+    restart: unless-stopped
+    user: "${APP_UID:-10001}:${APP_GID:-10001}"
+    environment:
+      - APP_DEBUG=false
+      - LOG_LEVEL=info
+      - APP_ENV=production
+      - CACHING=true
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD__FILE=/run/secrets/redis_password
+      - DB_CONNECTION=mongodb
+      - DB_HOST=mongodb
+      - DB_DATABASE=jikan
+      - DB_USERNAME__FILE=/run/secrets/db_username
+      - DB_ADMIN__FILE=/run/secrets/db_username
+      - DB_PASSWORD__FILE=/run/secrets/db_password
+      - SCOUT_DRIVER=typesense
+      - SCOUT_QUEUE=false
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_API_KEY__FILE=/run/secrets/typesense_api_key
+      - CORS_MIDDLEWARE=true
+      - MICROCACHING=true
+      - MICROCACHING_EXPIRE=60
+      - GITHUB_REPORTING=false
+      - REPORTING=false
+    secrets:
+      - db_username
+      - db_password
+      - typesense_api_key
+      - redis_password
+    depends_on:
+      mongodb: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      typesense: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --spider -q "http://127.0.0.1:2114/health?plugin=http"']
+      interval: 2s
+      timeout: 2s
+    labels:
+      - "diun.enable=true"
+      - "diun.metadata.changelog=https://github.com/jikan-me/jikan-rest/releases"
+      - "diun.metadata.current_version=${JIKAN_VERSION}"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.jikan.rule=Host(`jikan.${DOMAIN}`)"
+      - "traefik.http.routers.jikan.entrypoints=websecure"
+      - "traefik.http.routers.jikan.middlewares=private-access@file"
+      - "traefik.http.routers.jikan.tls=true"
+      - "traefik.http.routers.jikan.tls.certresolver=letsencrypt"
+      - "traefik.http.services.jikan.loadbalancer.server.port=8080"
+    networks:
+      - jikan
+      - traefik
+
+  mongodb:
+    image: docker.io/mongo:${MONGO_VERSION:-focal}
+    container_name: jikan-mongodb
+    hostname: mongodb
+    restart: unless-stopped
+    command: "--wiredTigerCacheSizeGB ${MONGO_CACHE_SIZE_GB:-1.0}"
+    secrets:
+      - db_username
+      - db_password
+      - db_admin_username
+      - db_admin_password
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/db_admin_username
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_admin_password
+      MONGO_INITDB_DATABASE: jikan_admin
+    volumes:
+      - /opt/jikan/mongodb:/data/db
+      - /opt/jikan/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017 --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - jikan
+
+  redis:
+    image: docker.io/redis:${REDIS_VERSION:-6-alpine}
+    container_name: jikan-redis
+    hostname: redis
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$$(cat /run/secrets/redis_password)"
+    secrets:
+      - redis_password
+    volumes:
+      - /opt/jikan/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 2s
+    networks:
+      - jikan
+
+  typesense:
+    image: docker.io/typesense/typesense:${TYPESENSE_VERSION:-0.24.1}
+    container_name: jikan-typesense
+    hostname: typesense
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - TYPESENSE_API_KEY="$$(cat /run/secrets/typesense_api_key)" /opt/typesense-server --data-dir /data
+    secrets:
+      - typesense_api_key
+    volumes:
+      - /opt/jikan/typesense:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --spider -q "http://127.0.0.1:8108/health"']
+      interval: 5s
+      timeout: 2s
+    networks:
+      - jikan
+
+secrets:
+  db_username:
+    file: /opt/jikan/secrets/db_username.txt
+  db_password:
+    file: /opt/jikan/secrets/db_password.txt
+  db_admin_username:
+    file: /opt/jikan/secrets/db_admin_username.txt
+  db_admin_password:
+    file: /opt/jikan/secrets/db_admin_password.txt
+  redis_password:
+    file: /opt/jikan/secrets/redis_password.txt
+  typesense_api_key:
+    file: /opt/jikan/secrets/typesense_api_key.txt
+
+networks:
+  jikan:
+    name: jikan
+    driver: bridge
+  traefik:
+    external: true
