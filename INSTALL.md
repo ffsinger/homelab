@@ -677,8 +677,8 @@ echo
 echo "$JIKAN_TYPESENSE_API_KEY" | sudo tee /opt/jikan/secrets/typesense_api_key.txt > /dev/null
 
 sudo useradd --no-create-home --shell /usr/sbin/nologin --uid 10001 jikan
-sudo chown -R jikan:root /opt/jikan/secrets
-sudo chmod 640 /opt/jikan/secrets/*.txt
+sudo chmod 750 /opt/jikan/secrets
+sudo chmod 644 /opt/jikan/secrets/*.txt
 
 echo "JIKAN_VERSION=" | sudo tee /opt/jikan/.env > /dev/null
 echo "MONGO_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null

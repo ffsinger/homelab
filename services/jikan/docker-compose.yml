@@ -61,7 +61,7 @@ services:
       - traefik
 
   mongodb:
-    image: docker.io/mongo:${MONGO_VERSION:-focal}
+    image: docker.io/mongo:${MONGO_VERSION:-latest}
     container_name: jikan-mongodb
     hostname: mongodb
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
       - jikan
 
   redis:
-    image: docker.io/redis:${REDIS_VERSION:-6-alpine}
+    image: docker.io/redis:${REDIS_VERSION:-latest}
     container_name: jikan-redis
     hostname: redis
     restart: unless-stopped
@@ -107,7 +107,7 @@ services:
       - jikan
 
   typesense:
-    image: docker.io/typesense/typesense:${TYPESENSE_VERSION:-0.24.1}
+    image: docker.io/typesense/typesense:${TYPESENSE_VERSION:-latest}
     container_name: jikan-typesense
     hostname: typesense
     restart: unless-stopped
@@ -120,7 +120,7 @@ services:
     volumes:
       - /opt/jikan/typesense:/data
     healthcheck:
-      test: ['CMD-SHELL', 'wget --spider -q "http://127.0.0.1:8108/health"']
+      test: ['CMD-SHELL', 'curl -sf http://127.0.0.1:8108/health | grep -q ok']
       interval: 5s
       timeout: 2s
     networks:
