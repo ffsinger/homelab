@@ -11,7 +11,6 @@ start_order:
   - nextcloud
   - manga
   - gotify
-  - jikan
   - n8n
   - diun
   - homepage
@@ -85,15 +84,6 @@ services:
         mode: copy
       - src: services/n8n/n8n-task-runners.json
         dst: /opt/n8n/n8n-task-runners.json
-        mode: copy
-
-  jikan:
-    files:
-      - src: services/jikan/docker-compose.yml
-        dst: /opt/jikan/docker-compose.yml
-        mode: copy
-      - src: services/jikan/mongo-init.js
-        dst: /opt/jikan/mongo-init.js
         mode: copy
 
   diun:

@@ -640,54 +640,6 @@ echo "N8N_VERSION=" | sudo tee -a /opt/n8n/.env > /dev/null
 sudo chmod 600 /opt/n8n/.env
 ```
 
-## Jikan REST
-
-- [Project](https://github.com/jikan-me/jikan-rest)
-- [Docs](https://docs.api.jikan.moe/)
-- [docker-compose.yml](./services/jikan/docker-compose.yml)
-- [mongo-init.js](./services/jikan/mongo-init.js)
-- [.env.compose](./services/jikan/.env.compose)
-
-```bash
-sudo mkdir -p /opt/jikan
-sudo mkdir -p /opt/jikan/secrets
-
-read -p "Enter DB username: " JIKAN_DB_USERNAME
-echo
-echo "$JIKAN_DB_USERNAME" | sudo tee /opt/jikan/secrets/db_username.txt > /dev/null
-
-read -s -p "Enter DB password: " JIKAN_DB_PASSWORD
-echo
-echo "$JIKAN_DB_PASSWORD" | sudo tee /opt/jikan/secrets/db_password.txt > /dev/null
-
-read -p "Enter DB admin username: " JIKAN_DB_ADMIN_USERNAME
-echo
-echo "$JIKAN_DB_ADMIN_USERNAME" | sudo tee /opt/jikan/secrets/db_admin_username.txt > /dev/null
-
-read -s -p "Enter DB admin password: " JIKAN_DB_ADMIN_PASSWORD
-echo
-echo "$JIKAN_DB_ADMIN_PASSWORD" | sudo tee /opt/jikan/secrets/db_admin_password.txt > /dev/null
-
-read -s -p "Enter Redis password: " JIKAN_REDIS_PASSWORD
-echo
-echo "$JIKAN_REDIS_PASSWORD" | sudo tee /opt/jikan/secrets/redis_password.txt > /dev/null
-
-read -s -p "Enter Typesense API key: " JIKAN_TYPESENSE_API_KEY
-echo
-echo "$JIKAN_TYPESENSE_API_KEY" | sudo tee /opt/jikan/secrets/typesense_api_key.txt > /dev/null
-
-sudo useradd --no-create-home --shell /usr/sbin/nologin --uid 10001 jikan
-sudo chmod 750 /opt/jikan/secrets
-sudo chmod 644 /opt/jikan/secrets/*.txt
-
-echo "JIKAN_VERSION=" | sudo tee /opt/jikan/.env > /dev/null
-echo "MONGO_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null
-echo "REDIS_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null
-echo "TYPESENSE_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null
-
-sudo chmod 600 /opt/jikan/.env
-```
-
 ## Diun
 
 - Notifications for docker image updates
