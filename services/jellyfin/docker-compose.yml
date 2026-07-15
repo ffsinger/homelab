@@ -27,6 +27,8 @@ services:
       #   source: /path/to/fonts
       #   target: /usr/local/share/fonts/custom
       #   read_only: true
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
     labels:
       - "diun.enable=true"
       - "diun.metadata.changelog=https://github.com/jellyfin/jellyfin/releases"
