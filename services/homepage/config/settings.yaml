@@ -16,7 +16,7 @@ color: slate
 
 headerStyle: boxedWidgets
 
-favicon: /images/homelab-icons/favicon-32x32.png
+favicon: /images/homelab-icon-32.png
 
 layout:
   Media:
@@ -36,6 +36,6 @@ disableUpdateCheck: true
 
 pwa:
   icons:
-    - src: /images/homelab-icons/android-icon-192x192.png
+    - src: /images/homelab-icon-256.png
       type: image/png
-      sizes: 192x192
+      sizes: 256x256

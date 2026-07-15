@@ -3,7 +3,7 @@
 # https://gethomepage.dev/configs/info-widgets/
 
 - logo:
-    icon: /images/homelab.png
+    icon: /images/homelab-icon.svg
 
 - resources:
     expanded: true
