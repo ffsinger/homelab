@@ -56,12 +56,6 @@
         server: my-docker
         container: nextcloud-aio-mastercontainer
 
-    - n8n:
-        href: https://n8n.${DOMAIN}
-        icon: n8n.png
-        server: my-docker
-        container: n8n
-
     - Gotify:
         href: https://gotify.${DOMAIN}
         icon: gotify.png

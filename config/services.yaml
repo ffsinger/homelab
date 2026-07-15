@@ -11,7 +11,6 @@ start_order:
   - nextcloud
   - manga
   - gotify
-  - n8n
   - diun
   - homepage
 
@@ -72,18 +71,6 @@ services:
     files:
       - src: services/gotify/docker-compose.yml
         dst: /opt/gotify/docker-compose.yml
-        mode: copy
-
-  n8n:
-    files:
-      - src: services/n8n/docker-compose.yml
-        dst: /opt/n8n/docker-compose.yml
-        mode: copy
-      - src: services/n8n/Dockerfile
-        dst: /opt/n8n/Dockerfile
-        mode: copy
-      - src: services/n8n/n8n-task-runners.json
-        dst: /opt/n8n/n8n-task-runners.json
         mode: copy
 
   diun:
@@ -149,16 +136,6 @@ backups:
     exclude:
       - opt/jellyfin/config/log
       - opt/jellyfin/config/metadata
-
-  # n8n : no internal backup
-  - service: n8n
-    paths:
-      - /opt/n8n/data
-      - /opt/n8n/local-files
-    exclude:
-      - opt/n8n/data/n8nEventLog-1.log
-      - opt/n8n/data/n8nEventLog-2.log
-      - opt/n8n/data/n8nEventLog.log
 
   # Gotify : no internal backup
   - service: gotify

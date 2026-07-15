@@ -120,3 +120,26 @@ echo "TYPESENSE_VERSION=" | sudo tee -a /opt/jikan/.env > /dev/null
 
 sudo chmod 600 /opt/jikan/.env
 ```
+
+## n8n
+
+- https://docs.n8n.io/hosting
+- https://docs.n8n.io/hosting/installation/server-setups/docker-compose
+- [docker-compose.yml](./services/n8n/docker-compose.yml)
+- Task runners are set as external, i.e. they have their own container
+    - [Dockerfile](./services/n8n/Dockerfile)
+    - [Runners config](./services/n8n/n8n-task-runners.json)
+    - In there we can install extra packages for code blocks (python and javascript)
+- Webhooks won't work unless we run with `--tunnel` (which is not safe, don't do it)
+
+```bash
+sudo mkdir -p /opt/n8n
+
+read -s -p "Enter n8n runners auth token: " N8N_RUNNERS_AUTH_TOKEN
+echo
+echo "N8N_RUNNERS_AUTH_TOKEN=$N8N_RUNNERS_AUTH_TOKEN" | sudo tee /opt/n8n/.env > /dev/null
+
+echo "N8N_VERSION=" | sudo tee -a /opt/n8n/.env > /dev/null
+
+sudo chmod 600 /opt/n8n/.env
+```

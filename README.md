@@ -22,7 +22,6 @@ Installation instructions, config files and scripts for a homelab server running
 | [rclone](https://rclone.org/) | WebDAV server for syncing manga with mokuro-reader | Yes |
 | [Gotify](https://gotify.net/) | Notification server | Yes |
 | [Diun](https://crazymax.dev/diun/) | Notifications about new docker tags | Yes |
-| [n8n](https://n8n.io/) | Easy automation, used for notifying about new manga volumes | Yes |
 | [Wireguard](https://www.wireguard.com/) | VPN for accessing services from outside the home network | No |
 | [Wireguard-initramfs](https://github.com/r-pufky/wireguard-initramfs/) | Wireguard during boot for decrypting the root filesystem from outside the home network | No |
 | [Samba](https://www.samba.org/) | Filesystem access to the media library | No |
