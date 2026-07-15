@@ -5,7 +5,7 @@ services:
     pull_policy: always # Important for staying up to date
     restart: 'unless-stopped'
     # Optional - specify the uid and gid you would like Jellyfin to use instead of root
-    user: 1000:1000
+    # user: 1000:1000
     group_add:
       - '992' # Add to 'render' group for hardware acceleration access
     ports:
