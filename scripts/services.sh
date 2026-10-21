@@ -35,6 +35,17 @@ fi
 # Load startup order from config
 mapfile -t START_ORDER < <(yq -r '.start_order[]' "$CONFIG_FILE")
 
+# Run docker compose for a service, passing its .env only if it exists
+compose() {
+    local service=$1
+    shift
+    local env_args=()
+    if [[ -f "/opt/$service/.env" ]]; then
+        env_args+=(--env-file "/opt/$service/.env")
+    fi
+    sudo docker compose "${env_args[@]}" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" "$@"
+}
+
 # Function to check if config has differences
 check_config_diff() {
     local service=$1
@@ -160,10 +171,10 @@ start_service() {
     
     if [[ -n "$container" ]]; then
         echo "Starting $container (from $service stack)..."
-        sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" up -d --build "$container"
+        compose "$service" up -d --build "$container"
     else
         echo "Starting $service..."
-        sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" up -d --build
+        compose "$service" up -d --build
         
         # Execute on_start hook if defined
         local on_start_hook=$(yq -r ".services.\"$service\".hooks.on_start // \"\"" "$CONFIG_FILE")
@@ -181,7 +192,7 @@ stop_service() {
     
     if [[ -n "$container" ]]; then
         echo "Stopping $container (from $service stack)..."
-        sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" stop "$container"
+        compose "$service" stop "$container"
     else
         echo "Stopping $service..."
         
@@ -191,7 +202,7 @@ stop_service() {
             sudo $on_stop_hook
         fi
         
-        sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" down
+        compose "$service" down
     fi
     echo ""
 }
@@ -267,11 +278,11 @@ update_version() {
     
     # Pull new image
     echo "Pulling new image for $container..."
-    sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" pull "$container"
+    compose "$service" pull "$container"
     
     # Restart service (with --build flag to rebuild if using build: directive)
     echo "Restarting $container..."
-    sudo docker compose --env-file "/opt/$service/.env" --env-file "$GLOBAL_ENV_FILE" -f "/opt/$service/docker-compose.yml" up -d --build "$container"
+    compose "$service" up -d --build "$container"
     
     echo ""
     echo "Version updated successfully!"
